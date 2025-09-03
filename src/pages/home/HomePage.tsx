@@ -1,3 +1,5 @@
+import Calendar from '@/pages/home/components/Calendar';
+
 export default function HomePage() {
-  return <main style={{ padding: 24 }}>DOMI Home ✅</main>;
+  return <Calendar></Calendar>
 }
