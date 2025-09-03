@@ -1,22 +1,31 @@
-import { useState } from 'react';
-import interactionPlugin from '@fullcalendar/interaction';
-import type { DateClickArg } from '@fullcalendar/interaction';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
+import React, { useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import type { EventType } from "@/pages/home/components/types";
+import AddEventButton from "@/pages/home/components/AddEventButton";
 
-type EventType = {title : string; date : string};
-
-export default function Calendar() {
+const Calendar: React.FC = () => {
   const [events, setEvents] = useState<EventType[]>([
-    {title : 'DOMI Project 시작', date : '2025-09-03'}
-  ])
+    { title: "DOMI 시작", date: "2025-09-03" },
+  ]);
+
+  const handleAddEventClick = () => {
+    console.log("Add Event button clicked!");
+  };
 
   return (
-    <FullCalendar
-      plugins={[dayGridPlugin, interactionPlugin]}
-      initialView="dayGridMonth"
-      height="auto"
-      events={events}
-    />
+    <div>
+      {/* Step 1: 버튼 추가 */}
+      <AddEventButton onClick={handleAddEventClick} />
+
+      {/* FullCalendar */}
+      <FullCalendar
+        plugins={[dayGridPlugin]}
+        initialView="dayGridMonth"
+        events={events}
+      />
+    </div>
   );
-}
+};
+
+export default Calendar;
