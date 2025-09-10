@@ -5,8 +5,11 @@ import styled from '@emotion/styled'
 import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
+
+  const navigate = useNavigate()
 
   const [show, setShow] = useState(false);
 
@@ -83,6 +86,7 @@ export default function Header() {
                 `}>
                 <Button variant="primary" onClick={()=>{
                   handleShow();
+                  navigate('/')
                 }} css={
                     css`
                       color: red;
