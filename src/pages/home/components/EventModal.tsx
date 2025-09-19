@@ -11,18 +11,18 @@ type EventModalProps = {
 const EventModal: React.FC<EventModalProps> = ({isOpen, onClose, title = "Modal", children}) => {
   const backdropRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if(!isOpen){
-      return;
-    }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if(e.key === "Escape"){
-        onClose();
-      };
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, onClose]);
+  // useEffect(() => {
+  //   if(!isOpen){
+  //     return;
+  //   }
+  //   const onKeyDown = (e: KeyboardEvent) => {
+  //     if(e.key === "Escape"){
+  //       onClose();
+  //     };
+  //   }
+  //   window.addEventListener("keydown", onKeyDown);
+  //   return () => window.removeEventListener("keydown", onKeyDown);
+  // }, [isOpen, onClose]);
   
   if(!isOpen){ //isOpen이 false일 경우 return 못하게 걸러줌
     return null;
@@ -34,23 +34,22 @@ const EventModal: React.FC<EventModalProps> = ({isOpen, onClose, title = "Modal"
     }
   }
   return (
-    <Backdrop onClick={handleBackdropClick} ref={backdropRef}>
+    <ModalWrapper onClick={handleBackdropClick} ref={backdropRef}>
       <Card>
         <Body>{children}</Body>
       </Card>
-    </Backdrop>
+    </ModalWrapper>
   )
 }
 
-const Backdrop = styled.div`
+const ModalWrapper  = styled.div`
   box-sizing: border-box;
   position: fixed;
   inset: 0;
-  background-color: rgba(0,0,0,0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 101;
+  z-index: 200;
 `
 
 const Card = styled.div` // 공통 모달 틀

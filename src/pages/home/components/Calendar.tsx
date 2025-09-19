@@ -7,6 +7,7 @@ import { fetchEvents, createEventsInRange, updateEvent, deleteEvent } from "@/pa
 import styled from "@emotion/styled";
 import type { DateClickArg } from "@fullcalendar/interaction";
 import interactionPlugin from "@fullcalendar/interaction";
+import { Id } from "@/pages/login/LoginCompnent";
 
 const Calendar: React.FC = () => {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -21,7 +22,7 @@ const Calendar: React.FC = () => {
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   //CreateModal 입력 상태
   const [formTitle, setFormTitle] = useState("");
@@ -35,6 +36,15 @@ const Calendar: React.FC = () => {
   const [endMonth, setEndMonth] = useState<string>("");
   const [endDay, setEndDay] = useState<string>("");
   
+  const close = () => {
+    setIsListModalOpen(false);
+    setIsCreateModalOpen(false);
+    setIsDetailModalOpen(false);
+    setIsEditModalOpen(false);
+    setFormTitle("");
+    setFormContent("");
+  }
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -108,7 +118,7 @@ const Calendar: React.FC = () => {
 
   //이미 저장된 이벤트들의 날짜와 선택된 날짜를 비교해서 같은 날짜만 반환
   const listForSelectedDate = useMemo(() => {
-    return selectedDate ? events.filter((e) => e.date.slice(0, 10) === selectedDate) : [];
+    return selectedDate ? events.filter((e) => e.startDate <= selectedDate && e.endDate >= selectedDate) : [];
   }, [events, selectedDate]);
 
   const openDetail = (id: string) => {
@@ -170,29 +180,17 @@ const Calendar: React.FC = () => {
   const closeCreateModal = () => {
     setFormTitle("");
     setFormContent("");
-    setIsCreateModalOpen(false)
+    setIsCreateModalOpen(false);
   }
 
   const openEditFromDetail = () => {
     if(!selectedEvent){
       return
     }
-    setIsEditMode(true);
+    setIsEditModalOpen(true)
 
     setFormTitle(selectedEvent.title ?? "");
     setFormContent(selectedEvent.content ?? "");
-
-    const [yy, mm, dd] = selectedEvent.date.slice(0, 10).split("-");
-    setStartYear(yy);
-    setStartMonth(mm);
-    setStartDay(dd);
-
-    setEndYear(yy);
-    setEndMonth(mm);
-    setEndDay(dd);
-
-    setIsDetailModalOpen(false);
-    setIsCreateModalOpen(true);
   }
 
   const handleSaveEdit = () => {
@@ -200,22 +198,35 @@ const Calendar: React.FC = () => {
       return
     }
 
-    const contentTrim = (formContent ?? "".trim);
+    const contentTrim = (formContent || "").trim();
+    if (contentTrim === "") {
+      alert("일정의 내용을 비울 수는 없습니다.");
+      return;
+    }
 
-    if(contentTrim === ""){
-      alert("일정의 내용을 비울 수는 없습니다.")
+    const updated = {
+      ...selectedEvent,
+      title: selectedEvent.title,
+      content: contentTrim,
+    };
+
+    //DB에 저장하기 위한 요청
+    updateEvent(updated);
+    //상태 갱신을 위한 업데이트
+    setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+    
+    setIsEditModalOpen(false);
+  }
+
+  const handleDeleteFromEdit = () => {
+    if(!selectedEvent){
+      return;
     }
-    else{
-      const updated = {
-        ...selectedEvent,
-         content: contentTrim,
-      }
-      updateEvent(updated);
-      setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
-    }
-    setIsCreateModalOpen(false);
-    setIsEditMode(false);
-    setSelectedEventId(null);
+
+    deleteEvent(selectedEvent.id);
+    setEvents((prev) => prev.filter((e) => e.id !== selectedEvent.id));
+    setIsEditModalOpen(false);
+    setIsDetailModalOpen(false);
   }
 
   return(<>
@@ -223,46 +234,54 @@ const Calendar: React.FC = () => {
       {loading && <p style={{ margin: "8px 0" }}>불러오는 중…</p>}
       {error && <p style={{ margin: "8px 0", color: "crimson" }}>{error}</p>}
 
+      {(isListModalOpen || isDetailModalOpen || isCreateModalOpen || isEditModalOpen) && (<Backdrop/>)}
+
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        events={events}
+        events={events.map(e => ({
+          id: e.id,
+          title: e.title,
+          content: e.content,
+          start: e.startDate,
+          end: e.endDate,
+        }))}
         dateClick={handleDayClick}
       />
 
       <EventModal
         isOpen={isListModalOpen}
-        onClose={() => setIsListModalOpen(false)}  
+        onClose={close}  
       >
         {listForSelectedDate.map((e) => (
           <ListModalEventContainer key={e.id} onClick={() => openDetail(e.id)}>
             <ListModalEventBox>
               <ListModalEventTItle>{e.title}</ListModalEventTItle>
-              <ListModalEventContent>공지 내용</ListModalEventContent>
+              <ListModalEventContent>{e.content ?? "내용 없음"}</ListModalEventContent>
             </ListModalEventBox>
           </ListModalEventContainer>
         ))}
         <ButtonBox>
-          <Button backColor="#A7A7A7" onClick={() => setIsListModalOpen(false)}>닫기</Button>
+          <Button backColor="#A7A7A7" onClick={close}>닫기</Button>
           <Button backColor="#6D71FF" onClick={openCreateFromList}>추가</Button>
         </ButtonBox>
       </EventModal>
 
       <EventModal
         isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
+        onClose={close}
       >
         <ModalTitle>{selectedEvent?.title}</ModalTitle>
         <DetailModalContent>{selectedEvent?.content ?? "내용 없음"}</DetailModalContent> {/* 이벤트 내용 없으면 "내용 없음" 표시*/}
         <ButtonBox>
-          <Button backColor="#A7A7A7" onClick={() => setIsDetailModalOpen(false)}>닫기</Button>
-          <Button backColor="#6D71FF" onClick={() => {/* 수정/삭제 모달 추가 예정 */}}>수정/삭제</Button>
+          <Button backColor="#A7A7A7" onClick={close}>닫기</Button>
+          <Button backColor="#6D71FF" onClick={openEditFromDetail}>수정/삭제</Button>
         </ButtonBox>
       </EventModal>
 
       <EventModal
         isOpen={isCreateModalOpen}
-        onClose={closeCreateModal}
+        onClose={close}
       >
         <NewEventTitleInput 
           placeholder="제목 입력"
@@ -353,12 +372,40 @@ const Calendar: React.FC = () => {
         ></NewEventContentInput>
 
         <ButtonBox>
-          <Button backColor="#A7A7A7" onClick={closeCreateModal}>닫기</Button>
-          <Button backColor="#6D71FF" onClick={handleCreate}>등록</Button>
+          <Button backColor="#A7A7A7" onClick={closeCreateModal}>취소</Button>
+          <Button backColor={
+            formTitle.trim() && formContent.trim() &&
+            startDay.trim() && startMonth.trim() && startYear.trim() &&
+            endDay.trim() && endMonth.trim() && endYear.trim() ? "#6D71FF" : "#A7A7A7"
+          }>등록</Button>
+        </ButtonBox>
+      </EventModal>
+
+      <EventModal
+        isOpen={isEditModalOpen}
+        onClose={close}
+      >
+        <ModalTitle>{selectedEvent?.title}</ModalTitle>
+        <EditContentArea
+          value={formContent}
+          onChange={(e) => setFormContent(e.target.value)}
+          placeholder="내용"
+        ></EditContentArea>
+        <ButtonBox>
+          <Button backColor="#A7A7A7" onClick={close}>닫기</Button>
+          <Button backColor="#FF7474" onClick={handleDeleteFromEdit}>삭제</Button>
+          <Button backColor={formContent.trim() ? "#6D71FF" : "#A7A7A7"} onClick={handleSaveEdit}>저장</Button>
         </ButtonBox>
       </EventModal>
   </>)
 }
+
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100; /* 모달보다 낮아야 함 */
+`;
 
 const ListModalEventContainer = styled.div`
   box-sizing: border-box;
@@ -413,6 +460,14 @@ const ModalTitle = styled.h2`
 `
 
 const DetailModalContent = styled.span`
+  box-sizing: border-box;
+  font-size: clamp(18px, 1.25vw, 23px);
+  font-weight: 500;
+  height: calc(100vh * 615 / 1080);
+  width:  calc((100vh * 615 / 1080) * (604 / 615));
+`
+
+const EditContentArea = styled.input`
   box-sizing: border-box;
   font-size: clamp(18px, 1.25vw, 23px);
   font-weight: 500;

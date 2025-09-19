@@ -22,8 +22,8 @@ function readStore(): EventType[] {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) {
       const seed: EventType[] = [
-        { id: "seed-1", title: "회의", date: "2025-09-02", content: "팀 회의가 있습니다." },
-        { id: "seed-2", title: "DOMI 시작", date: "2025-09-03", content: "프로젝트 킥오프" },
+        { id: "seed-1", title: "회의", startDate: "2025-09-02", endDate: "2025-09-02", content: "팀 회의가 있습니다." },
+        { id: "seed-2", title: "DOMI 시작", startDate: "2025-09-03", endDate: "2025-09-03", content: "프로젝트 킥오프" },
       ];
       localStorage.setItem(LS_KEY, JSON.stringify(seed));
       return seed;
@@ -63,7 +63,7 @@ export async function fetchEvents(): Promise<EventType[]> {
 
 export async function fetchEventsByDate(date: string): Promise<EventType[]> {
   await delay(100);
-  return readStore().filter(e => e.date === date);
+  return readStore().filter(e => e.startDate <= date && e.endDate >= date);
 }
 
 export async function getEventById(id: string): Promise<EventType> {
@@ -88,17 +88,17 @@ export async function createEventsInRange(input: NewEventRangeInput): Promise<Ev
 
   if (startDate > endDate) throw new Error("Invalid range");
 
-  const created: EventType[] = [];
-  let cur = startDate;
-  while (true) {
-    created.push({ id: genId(), title, date: cur, content });
-    if (cur === endDate) break;
-    cur = addDays(cur, 1);
-  }
+  const newEvent: EventType = {
+    id: genId(),
+    title,
+    startDate,
+    endDate,
+    content,
+  };
 
-  const next = [...readStore(), ...created];
+  const next = [...readStore(), newEvent];
   writeStore(next);
-  return created;
+  return [newEvent];
 }
 
 export async function updateEvent(updated: EventType): Promise<EventType> {
