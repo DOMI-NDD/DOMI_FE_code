@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import styled from '@emotion/styled';
 
 type EventModalProps = {
@@ -64,6 +64,7 @@ const Card = styled.div` // 공통 모달 틀
 `
 
 const Body = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;

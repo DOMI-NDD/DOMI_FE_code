@@ -5,9 +5,10 @@ import type { EventType } from "@/pages/home/components/types";
 import EventModal from "@/pages/home/components/EventModal";
 import { fetchEvents, createEventsInRange, updateEvent, deleteEvent } from "@/pages/home/components/CalendarApi";
 import styled from "@emotion/styled";
-import type { DateClickArg } from "@fullcalendar/interaction";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Id } from "@/pages/login/LoginCompnent";
+import "./CalendarStyle.css";
+import Arrow from "@/assets/arrow.png"
+import ModalArrow from "@/assets/modalArrow.png"
 
 const Calendar: React.FC = () => {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -16,6 +17,8 @@ const Calendar: React.FC = () => {
 
   //클릭된 날짜 셀들 정보
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   //각 모달들 open 상태
@@ -35,7 +38,7 @@ const Calendar: React.FC = () => {
   const [endYear, setEndYear] = useState<string>("");
   const [endMonth, setEndMonth] = useState<string>("");
   const [endDay, setEndDay] = useState<string>("");
-  
+
   const close = () => {
     setIsListModalOpen(false);
     setIsCreateModalOpen(false);
@@ -112,6 +115,15 @@ const Calendar: React.FC = () => {
 
   const handleDayClick = (info: any) => {
     setSelectedDate(info.dateStr);
+    let [ , mm, dd] = info.dateStr.split("-");
+    if(mm[0] === "0"){
+      mm = mm[1];
+    }
+    if(dd[0] == "0"){
+      dd = dd[1];
+    }
+    setSelectedMonth(mm);
+    setSelectedDay(dd);
     fillYMD(info.dateStr);
     setIsListModalOpen(true);
   }
@@ -199,14 +211,15 @@ const Calendar: React.FC = () => {
     }
 
     const contentTrim = (formContent || "").trim();
-    if (contentTrim === "") {
-      alert("일정의 내용을 비울 수는 없습니다.");
+    const TitleTrim = (formTitle || "").trim();
+    if (contentTrim === "" || TitleTrim === "") {
+      alert("일정의 제목과 내용을 비울 수는 없습니다.");
       return;
     }
 
     const updated = {
       ...selectedEvent,
-      title: selectedEvent.title,
+      title: TitleTrim,
       content: contentTrim,
     };
 
@@ -236,6 +249,7 @@ const Calendar: React.FC = () => {
 
       {(isListModalOpen || isDetailModalOpen || isCreateModalOpen || isEditModalOpen) && (<Backdrop/>)}
 
+      <div className="calendar-wrapper">
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
@@ -247,20 +261,89 @@ const Calendar: React.FC = () => {
           end: e.endDate,
         }))}
         dateClick={handleDayClick}
+        fixedWeekCount={false} 
+        headerToolbar={{
+            start: "",     // 왼쪽: 이전 버튼
+            center: "title",   // 가운데: 제목
+            end: ""        // 오른쪽: 다음 버튼
+            // today 버튼은 아예 안 넣음
+        }}
+        displayEventTime={false} // 시간 표시 안함
+        dayCellClassNames={(info) => {
+          const hasEvent = events.some((event) => {
+            const start = new Date(event.startDate);
+            const end = new Date(event.endDate);
+
+            // 시간 없애고 날짜만 비교
+            start.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+            const cell = new Date(info.date);
+            cell.setHours(0, 0, 0, 0);
+
+            return cell >= start && cell <= end;
+          });
+
+          return hasEvent ? ["has-event"] : [];
+        }}
+        titleFormat={() => ""}
+        // @ts-ignore
+        //위 주석 타입 에러 무시용 언젠가 고칠 예정
+        
+        datesSet={(arg) => {
+          const currentDate = arg.view.currentStart;
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth() + 1;
+
+          const titleEl = document.querySelector(".fc-toolbar-title");
+          if (titleEl) {
+            titleEl.innerHTML = `
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <span style="font-size: 36px; font-weight: 700;">${year}</span>
+                <div style="box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 20px; font-size: 40px; font-weight: 700; width:964px; padding: 0px 50px;">
+                  <img src="${Arrow}" class="fc-prev-btn" style="cursor: pointer; width: 10px; height: 16px; transform: rotate(180deg);" />
+                  <span>${month}월</span>
+                  <img src="${Arrow}" class="fc-next-btn" style="cursor: pointer; width: 10px; height: 16px;" />
+                </div>
+              </div>
+            `;
+
+            titleEl.querySelector(".fc-prev-btn")?.addEventListener("click", () => {
+              arg.view.calendar.prev();
+            });
+            titleEl.querySelector(".fc-next-btn")?.addEventListener("click", () => {
+              arg.view.calendar.next();
+            });
+          }
+        }}
+        // 요일은 영어
+        dayHeaderFormat={{ weekday: "short" }}
+        dayCellContent={(arg) => {
+          return { html: `<div class="day-circle">${arg.date.getDate()}</div>` };
+        }}
       />
+      </div>
 
       <EventModal
         isOpen={isListModalOpen}
         onClose={close}  
       >
-        {listForSelectedDate.map((e) => (
-          <ListModalEventContainer key={e.id} onClick={() => openDetail(e.id)}>
-            <ListModalEventBox>
-              <ListModalEventTItle>{e.title}</ListModalEventTItle>
-              <ListModalEventContent>{e.content ?? "내용 없음"}</ListModalEventContent>
+        <ModalTitle>{selectedMonth}월 {selectedDay}일</ModalTitle>
+        <ListModalEventContainer>
+          {listForSelectedDate.map((e) => (
+            <ListModalEventBox key={e.id} onClick={() => openDetail(e.id)}>
+              <ListModalEventInfoBox>
+                <ListModalEventTItle>{e.title}</ListModalEventTItle>
+                <ListModalEventContent>{e.content 
+                  ? e.content.length > 20
+                    ? e.content.slice(0, 20) + "..."
+                    : e.content 
+                : "내용 없음"}
+                </ListModalEventContent>
+              </ListModalEventInfoBox>
+              <img src={ModalArrow} style={{width: "calc(100vh * 12 / 1080)", height: "calc(100vh * 20 / 1080)", margin: "0 calc(100vh * 53 / 1080) 0 0"}}/>
             </ListModalEventBox>
-          </ListModalEventContainer>
-        ))}
+          ))}
+        </ListModalEventContainer>
         <ButtonBox>
           <Button backColor="#A7A7A7" onClick={close}>닫기</Button>
           <Button backColor="#6D71FF" onClick={openCreateFromList}>추가</Button>
@@ -272,7 +355,7 @@ const Calendar: React.FC = () => {
         onClose={close}
       >
         <ModalTitle>{selectedEvent?.title}</ModalTitle>
-        <DetailModalContent>{selectedEvent?.content ?? "내용 없음"}</DetailModalContent> {/* 이벤트 내용 없으면 "내용 없음" 표시*/}
+        <DetailModalContent>{selectedEvent?.content}</DetailModalContent> {/* 이벤트 내용 없으면 "내용 없음" 표시*/}
         <ButtonBox>
           <Button backColor="#A7A7A7" onClick={close}>닫기</Button>
           <Button backColor="#6D71FF" onClick={openEditFromDetail}>수정/삭제</Button>
@@ -289,8 +372,8 @@ const Calendar: React.FC = () => {
           onChange={(e) => setFormTitle(e.target.value)}
         ></NewEventTitleInput>
         <TextBox>
-          <Title></Title>
-          <Content></Content>
+          <Title>날짜 선택</Title>
+          <Content>일정을 추가할 날짜를 선택해주세요</Content>
         </TextBox>
         <DateInputContainer>
           <DateInputBox>
@@ -325,7 +408,7 @@ const Calendar: React.FC = () => {
           </DateInputBox>
         </DateInputContainer>
 
-          {/* ~ 추가 해야함*/}
+        <Middle>~</Middle>
 
         <DateInputContainer>
           <DateInputBox>
@@ -361,8 +444,8 @@ const Calendar: React.FC = () => {
         </DateInputContainer>
 
         <TextBox>
-          <Title></Title>
-          <Content></Content>
+          <Title>내용 입력</Title>
+          <Content>공지할 내용을 입력해주세요</Content>
         </TextBox>
 
         <NewEventContentInput
@@ -377,7 +460,9 @@ const Calendar: React.FC = () => {
             formTitle.trim() && formContent.trim() &&
             startDay.trim() && startMonth.trim() && startYear.trim() &&
             endDay.trim() && endMonth.trim() && endYear.trim() ? "#6D71FF" : "#A7A7A7"
-          }>등록</Button>
+          }
+          onClick={handleCreate}
+          >등록</Button>
         </ButtonBox>
       </EventModal>
 
@@ -385,7 +470,11 @@ const Calendar: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={close}
       >
-        <ModalTitle>{selectedEvent?.title}</ModalTitle>
+        <EditTitleInput
+          value={formTitle}
+          onChange={(e) => setFormTitle(e.target.value)}
+          placeholder="제목"
+        ></EditTitleInput>
         <EditContentArea
           value={formContent}
           onChange={(e) => setFormContent(e.target.value)}
@@ -408,26 +497,35 @@ const Backdrop = styled.div`
 `;
 
 const ListModalEventContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: calc(100vh * 19 / 1080);
+  margin-top: calc(100vh * 91 / 1080);
+`
+
+const ListModalEventBox = styled.div`
   box-sizing: border-box;
   border: 1px solid #939393;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   border-radius: 8px;
   height: calc(100vh * 100 / 1080);
   width:  calc((100vh * 100 / 1080) * (604 / 100));
   cursor: pointer;
 `
 
-const ListModalEventBox = styled.div`
+const ListModalEventInfoBox = styled.div`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  margin: 0 calc(100vh * 36 / 1080);
 `
 
 const ListModalEventTItle = styled.span`
   font-size: clamp(15px, 1.04vw, 19px);
-  font-weight: 500;
+  font-weight: 600;
 `
 
 const ListModalEventContent = styled.span`
@@ -438,7 +536,11 @@ const ListModalEventContent = styled.span`
 
 const ButtonBox = styled.div`
   display: flex;
+  justify-content: flex-end;
   gap: 24px;
+  width:  calc((100vh * 100 / 1080) * (604 / 100));
+  position: absolute;
+  top: 74.07vh;
 `
 
 const Button = styled.button<{backColor: string}>`
@@ -455,28 +557,42 @@ const Button = styled.button<{backColor: string}>`
 `
 
 const ModalTitle = styled.h2`
-  font-weight: 500;
+  font-weight: 600;
   font-size: clamp(30px, 2.08vw, 38px);
+`
+
+const EditTitleInput = styled.input`
+  font-weight: 600;
+  font-size: clamp(30px, 2.08vw, 38px);
+  border: none;
+  outline: none;
+  text-align: center; 
 `
 
 const DetailModalContent = styled.span`
   box-sizing: border-box;
   font-size: clamp(18px, 1.25vw, 23px);
-  font-weight: 500;
+  font-weight: 600;
   height: calc(100vh * 615 / 1080);
   width:  calc((100vh * 615 / 1080) * (604 / 615));
+  margin-top: 5.74vh;
 `
 
-const EditContentArea = styled.input`
+const EditContentArea = styled.textarea`
   box-sizing: border-box;
   font-size: clamp(18px, 1.25vw, 23px);
   font-weight: 500;
   height: calc(100vh * 615 / 1080);
   width:  calc((100vh * 615 / 1080) * (604 / 615));
+  resize: none;
+  border: none;
+  outline: none;
+  margin-top: 5.74vh;
 `
 
 const DateInputContainer = styled.div`
   display: flex;
+  gap: 32px;
 `
 
 const DateInputBox = styled.div`
@@ -485,11 +601,25 @@ const DateInputBox = styled.div`
 `
 
 const DateLabel = styled.label`
-  
+  color: black;
+  font-weight: 600;
+  font-size: clamp(18px, 1.25vw, 22.8px);
 `
 
 const DateInput = styled.input`
-  
+  box-sizing: border-box;
+  width: calc((100vh * 60 / 1080) * (180 / 60));
+  height: calc(100vh * 60 / 1080);
+  border-radius: 8px;
+  border: 1px solid #939393;
+  color: #939393;
+  font-weight: 400;
+  font-size: clamp(15px, 1.042vw, 19px);
+  color: black;
+  &::placeholder{
+    color: #939393;
+  }
+  padding: calc(100vh * 16 / 1080);
 `
 
 const NewEventTitleInput = styled.input`
@@ -499,28 +629,48 @@ const NewEventTitleInput = styled.input`
   height: calc(100vh * 56 / 1080);
   width:  calc((100vh * 56 / 1080) * (500 / 56));
   font-size: clamp(24px, 1.67vw, 30px);
-  font-weight: 500;
+  font-weight: 600;
+  color: black;
+  &::placeholder{
+    color: #A7A7A7;
+  }
+  text-align: center;
 `
 
-const NewEventContentInput = styled.input`
+const NewEventContentInput = styled.textarea`
   box-sizing: border-box;
   font-size: clamp(15px, 1.04vw, 19px);
   height: calc(100vh * 254 / 1080);
   width:  calc((100vh * 254 / 1080) * (604 / 254));
   border: 1px solid #939393;
   border-radius: 8px;
+  resize: none;
+  padding: calc(100vh * 16 / 1080);
+`
+
+const Middle = styled.span`
+  color: #A7A7A7;
+  font-weight: 400;
+  font-size: clamp(19.5px, 1.354vw, 24.7px);
+  margin: 0.83vh;
 `
 
 const TextBox = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
+  margin: 1.85vh 0 0.74vh;
 `
 
 const Title = styled.span`
-  
+  color: black;
+  font-weight: 600;
+  font-size: clamp(18px, 1.25vw, 22.8px);
 `
 const Content = styled.span`
-  
+  color: #939393;
+  font-weight: 400;
+  font-size: clamp(15px, 1.042vw, 19px);
 `
 export default Calendar
