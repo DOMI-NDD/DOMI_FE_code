@@ -45,16 +45,6 @@ function genId() {
     : String(Date.now()) + Math.random().toString(16).slice(2);
 }
 
-function pad(n: number) { return String(n).padStart(2, "0"); }
-function toIso(y: number, m: number, d: number) { return `${y}-${pad(m)}-${pad(d)}`; }
-
-function addDays(iso: string, n: number) {
-  const [y, m, d] = iso.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  dt.setDate(dt.getDate() + n);
-  return toIso(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-}
-
 // ── API (Mock) ────────────────────────────────────────────────
 export async function fetchEvents(): Promise<EventType[]> {
   await delay(120);

@@ -4,11 +4,10 @@ import styled from '@emotion/styled';
 type EventModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
   children?: React.ReactNode;
 }
 
-const EventModal: React.FC<EventModalProps> = ({isOpen, onClose, title = "Modal", children}) => {
+const EventModal: React.FC<EventModalProps> = ({isOpen, onClose, children}) => {
   const backdropRef = useRef<HTMLDivElement | null>(null);
 
   // useEffect(() => {
