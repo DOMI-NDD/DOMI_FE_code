@@ -18,7 +18,7 @@ export default function Header() {
 
   return (
         <Head css={css`
-          z-index:100;
+          z-index: 100;
         `}>
         <LogoText>
           <svg width="170" height="80" viewBox="0 0 182 80" fill="none" xmlns="http://www.w3.org/2000/svg">
