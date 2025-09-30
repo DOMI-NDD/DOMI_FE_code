@@ -5,18 +5,3 @@ export type EventType = {
   endDate: string;
   content?: string;
 };
-
-
-export type NewEventSingleInput = {
-  title: string;
-  startDate: string;
-  endDate: string;
-  content?: string;
-}
-
-export type NewEventRangeInput = {
-  title: string;
-  startDate: string;
-  endDate: string;
-  content?: string;
-}

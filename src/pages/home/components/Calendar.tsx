@@ -3,7 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import type { EventType } from "@/pages/home/components/types";
 import EventModal from "@/pages/home/components/EventModal";
-import { fetchEvents, createEventsInRange, updateEvent, deleteEvent } from "@/pages/home/components/CalendarApi";
+import { fetchEvents, createEvent, updateEvent, deleteEvent } from "@/pages/home/components/CalendarApi";
 import styled from "@emotion/styled";
 import interactionPlugin from "@fullcalendar/interaction";
 import "./CalendarStyle.css";
@@ -166,14 +166,14 @@ const Calendar: React.FC = () => {
       return
     }
 
-    const newEvents = await createEventsInRange({
+    const newEvents = await createEvent({
       startDate: startISO,
       endDate: endISO,
       title: formTitle,
       content: formContent,
     });
 
-    setEvents((prev) => [...prev, ...newEvents])
+    setEvents((prev) => [...prev, newEvents])
 
     setStartYear("");
     setStartMonth("");
@@ -223,7 +223,10 @@ const Calendar: React.FC = () => {
     };
 
     //DB에 저장하기 위한 요청
-    updateEvent(updated);
+    updateEvent(updated.id, {
+      title: updated.title,
+      content: updated.content,
+    });
     //상태 갱신을 위한 업데이트
     setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
     
