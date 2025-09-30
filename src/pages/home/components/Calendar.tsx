@@ -558,14 +558,25 @@ const Button = styled.button<{backColor: string}>`
 const ModalTitle = styled.h2`
   font-weight: 600;
   font-size: clamp(30px, 2.08vw, 38px);
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  display: block;
+  box-sizing: border-box;
 `
 
 const EditTitleInput = styled.input`
+  box-sizing: border-box;
   font-weight: 600;
   font-size: clamp(30px, 2.08vw, 38px);
   border: none;
   outline: none;
   text-align: center; 
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  display: block;
 `
 
 const DetailModalContent = styled.span`
@@ -575,18 +586,24 @@ const DetailModalContent = styled.span`
   height: calc(100vh * 615 / 1080);
   width:  calc((100vh * 615 / 1080) * (604 / 615));
   margin-top: 5.74vh;
+  padding: 0;
+  line-height: 1.5;
+  display: block;
 `
 
 const EditContentArea = styled.textarea`
   box-sizing: border-box;
   font-size: clamp(18px, 1.25vw, 23px);
-  font-weight: 500;
+  font-weight: 600;
   height: calc(100vh * 615 / 1080);
   width:  calc((100vh * 615 / 1080) * (604 / 615));
   resize: none;
   border: none;
   outline: none;
   margin-top: 5.74vh;
+  padding: 0;
+  line-height: 1.5;
+  display: block;
 `
 
 const DateInputContainer = styled.div`
