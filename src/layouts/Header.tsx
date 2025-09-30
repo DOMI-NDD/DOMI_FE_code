@@ -86,7 +86,7 @@ export default function Header() {
                 `}>
                 <Button variant="primary" onClick={()=>{
                   handleShow();
-                  navigate('/')
+                  // navigate('/')
                 }} css={
                     css`
                       color: red;
@@ -139,7 +139,7 @@ export default function Header() {
                 </p>
             </div>
           </div>
-          <DropdownItem href="#/action-2">
+          <DropdownItem href="/">
             <P>홈</P>
             </DropdownItem>
           <DropdownItem href="/dashboard">
