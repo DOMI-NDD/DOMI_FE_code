@@ -161,8 +161,8 @@ const Calendar: React.FC = () => {
       alert("종료 날짜가 시작 날짜보다 빠를 수 없습니다.");
       return;
     }
-    if(!formTitle.trim() || !formContent.trim()){
-      alert("제목과 내용 입력은 필수입니다.");
+    if(!formTitle.trim()){
+      alert("제목 입력은 필수입니다.");
       return
     }
 
@@ -202,7 +202,7 @@ const Calendar: React.FC = () => {
     setIsEditModalOpen(true)
 
     setFormTitle(selectedEvent.title ?? "");
-    setFormContent(selectedEvent.content ?? "");
+    setFormContent(selectedEvent.content ?? "내용 없음");
   }
 
   const handleSaveEdit = () => {
@@ -210,17 +210,16 @@ const Calendar: React.FC = () => {
       return
     }
 
-    const contentTrim = (formContent || "").trim();
     const TitleTrim = (formTitle || "").trim();
-    if (contentTrim === "" || TitleTrim === "") {
-      alert("일정의 제목과 내용을 비울 수는 없습니다.");
+    if (TitleTrim === "") {
+      alert("일정의 제목을 비울 수는 없습니다.");
       return;
     }
 
     const updated = {
       ...selectedEvent,
       title: TitleTrim,
-      content: contentTrim,
+      content: formContent,
     };
 
     //DB에 저장하기 위한 요청
@@ -457,7 +456,7 @@ const Calendar: React.FC = () => {
         <ButtonBox>
           <Button backColor="#A7A7A7" onClick={closeCreateModal}>취소</Button>
           <Button backColor={
-            formTitle.trim() && formContent.trim() &&
+            formTitle.trim() && 
             startDay.trim() && startMonth.trim() && startYear.trim() &&
             endDay.trim() && endMonth.trim() && endYear.trim() ? "#6D71FF" : "#A7A7A7"
           }
@@ -483,7 +482,7 @@ const Calendar: React.FC = () => {
         <ButtonBox>
           <Button backColor="#A7A7A7" onClick={close}>닫기</Button>
           <Button backColor="#FF7474" onClick={handleDeleteFromEdit}>삭제</Button>
-          <Button backColor={formContent.trim() ? "#6D71FF" : "#A7A7A7"} onClick={handleSaveEdit}>저장</Button>
+          <Button backColor={formTitle.trim() ? "#6D71FF" : "#A7A7A7"} onClick={handleSaveEdit}>저장</Button>
         </ButtonBox>
       </EventModal>
   </>)
