@@ -1,2 +1,7 @@
 import AppRouter from '@/router/AppRouter';
-export default function App() { return <AppRouter />; }
+import useReissue from './pages/login/Reissue';
+
+export default function App() { 
+  useReissue()
+  return <AppRouter />; 
+}

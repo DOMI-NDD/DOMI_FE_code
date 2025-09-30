@@ -1,26 +1,49 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { useState } from 'react';
+import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-
-interface ItemType {
-  id: number;
-  name: string;
-  contents: string;
-}
+import type { ItemType } from '@/types';
+import URL from '@/layouts/Url';
 
 interface EditProps {
   selectedItem: ItemType;
   add: ItemType[];
   setAdd: React.Dispatch<React.SetStateAction<ItemType[]>>;
   onClose: () => void;
+  onSuccess: () => void
 }
 
-export default function EditCompo({ selectedItem, add, setAdd, onClose }: EditProps) {
-  const [title, setTitle] = useState(selectedItem.name);
-  const [content, setContent] = useState(selectedItem.contents);
+export default function EditCompo({ selectedItem, add, setAdd, onClose, onSuccess }: EditProps) {
+  const [title, setTitle] = useState(selectedItem.title);
+  const [content, setContent] = useState(selectedItem.detail);
+
+  const handleSubmit = async (id: Number) => {
+    try {
+      console.log(id)
+      console.log(`${URL}/notice-boards/${id}`)
+      const accessToken = localStorage.getItem("accessToken")
+      const response = await axios.put(`${URL}/notice-boards/${id}`, 
+      {
+        title: title,
+        detail: content,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        },
+      }
+      );
+      onSuccess()
+      console.log(response)
+    } catch (error) {
+      console.error('연결 실패:', error);
+      alert("연결에 실패했습니다.");
+    }
+  };
 
   return (
     <Modal show={true} onHide={onClose} dialogClassName="modal-80size"
@@ -65,17 +88,8 @@ export default function EditCompo({ selectedItem, add, setAdd, onClose }: EditPr
           variant="primary"
           onClick={() => {
             if (title.trim() === "") return alert("제목을 입력하세요");
-
-            const updated = add.map((item) =>
-              item.id === selectedItem.id
-                ? { 
-                    ...item, 
-                    name: title, 
-                    contents: content 
-                  } // 이걸 post로 백엔드에 넘겨줌
-                : item
-            );
-            setAdd(updated);
+            if(!selectedItem) return;
+            handleSubmit(selectedItem.id)
             onClose();
           }}
         >

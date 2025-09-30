@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import Logo from "@/layouts/Logo";
-import { Id, Password, Button } from './LoginCompnent';
+import { Id, Password, Button } from '@/pages/login/LoginCompo';
 import { useState } from 'react';
 
 type LoginProps = {

@@ -3,6 +3,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import URL from '@/layouts/Url';
 
 type IdProps = {
   id: string;
@@ -65,18 +66,20 @@ export function Button({ id, pass, setToken }: BtnProps) {
     }
 
     try {
-      const response = await axios.post("http://192.168.127.159:8080/auth/signin", {
+      const response = await axios.post(`${URL}/auths/sign-in`, {
         accountId: id,
-        password: pass
+        password: pass,
       });
-
-      // 응답에서 토큰 받기 (백엔드 응답 구조에 따라 달라짐)
-      const { token } = response.data;
-      localStorage.setItem('accessToken', token);
-      setToken(token);
+      const username = response.data.username
+      const accountId = response.data.accountId
+      const accessToken = response.data.accessToken;
+      const refreshToken = response.data.refreshToken;
+      localStorage.setItem("username", username);
+      localStorage.setItem("accountId", accountId); 
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      setToken(accessToken);
       navigate('/');
-
-      console.log('로그인 성공:', response.data);
       
     } catch (error) {
       console.error('로그인 실패:', error);
