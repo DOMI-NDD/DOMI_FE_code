@@ -4,15 +4,15 @@ import axios from "axios";
 
 // 공통 axsios 인스턴스
 const axsios = axios.create({
-  baseURL: "http://13.209.77.82:8080", // 👉 너가 갖고 있는 baseURL 넣기
+  baseURL: "http://13.209.77.82:8080",
   headers: {
     "Content-Type": "application/json",
-    Authorization: "eyJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiYWNjZXNzX3Rva2VuIiwic3ViIjoiYSIsImlhdCI6MTc1OTIyNDU3NywiZXhwIjoxNzU5MjI1NDc3fQ.IfJPiJCx8X_S-lapJjzFOcQL6-1lLm641IDkWBKg6Y4"
+    Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiYWNjZXNzX3Rva2VuIiwic3ViIjoibCIsImlhdCI6MTc1OTMwMzU5NywiZXhwIjoxNzU5OTA4Mzk3fQ.hvn1tsvL2nyCssU6Vx1AQ2vdllJhQF-Mpco4HjOUjZ0"
   },
 });
 
 // 백엔드 → 프론트 매핑
-const mapFromBackend = (data: any): EventType => ({
+const mapFromBackend = (data: any): EventType => ({ 
   id: data.id,
   title: data.title,
   startDate: data.startDate,
@@ -30,21 +30,27 @@ const mapToBackend = (event: Partial<EventType>) => ({
 });
 
 // 일정 전체 조회
-export const fetchEvents = async (): Promise<EventType[]> => {
-  const { data } = await axsios.get("/calendars");
+export const fetchEvents = async (year: any, month: any): Promise<EventType[]> => {
+  console.log("년도" + year)
+  console.log("월" + month)
+  // let now = new Date();
+  // let year = now.getFullYear();
+  // let month = now.getMonth()+1;
+  if(month <= 10){
+    String(month).replaceAll("0", "");
+  }
+  const { data } = await axsios.get(`/calendars?year=${year}&month=${month}`);
   return data.map(mapFromBackend);
 };
 
 // 일정 생성
-export const createEvent = async (event: Omit<EventType, "id">): Promise<EventType> => {
-  const { data } = await axsios.post("/calendars", mapToBackend(event));
-  return mapFromBackend(data);
+export const createEvent = async (event: Omit<EventType, "id">) => {
+  await axsios.post("/calendars", mapToBackend(event));
 };
 
 // 일정 수정
-export const updateEvent = async (id: string, event: Partial<EventType>): Promise<EventType> => {
-  const { data } = await axsios.put(`/calendars/${id}`, mapToBackend(event));
-  return mapFromBackend(data);
+export const updateEvent = async (id: string, event: Partial<EventType>) => {
+  await axsios.put(`/calendars/${id}`, mapToBackend(event));
 };
 
 // 일정 삭제
