@@ -7,7 +7,7 @@ const axsios = axios.create({
   baseURL: "http://13.209.77.82:8080",
   headers: {
     "Content-Type": "application/json",
-    Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiYWNjZXNzX3Rva2VuIiwic3ViIjoibCIsImlhdCI6MTc1OTMwMzU5NywiZXhwIjoxNzU5OTA4Mzk3fQ.hvn1tsvL2nyCssU6Vx1AQ2vdllJhQF-Mpco4HjOUjZ0"
+    Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiYWNjZXNzX3Rva2VuIiwic3ViIjoibCIsImlhdCI6MTc1OTMyMTM1OCwiZXhwIjoxNzU5OTI2MTU4fQ.Pwn0s2MPQi59BpPTaOu9CfYcmpfjTm6fpOkytKp1zZQ"
   },
 });
 
@@ -31,15 +31,10 @@ const mapToBackend = (event: Partial<EventType>) => ({
 
 // 일정 전체 조회
 export const fetchEvents = async (year: any, month: any): Promise<EventType[]> => {
-  console.log("년도" + year)
-  console.log("월" + month)
-  // let now = new Date();
-  // let year = now.getFullYear();
-  // let month = now.getMonth()+1;
   if(month <= 10){
     String(month).replaceAll("0", "");
   }
-  const { data } = await axsios.get(`/calendars?year=${year}&month=${month}`);
+  const { data } = await axsios.get(`/calendars?year=${year}&month=${month}`) ;
   return data.map(mapFromBackend);
 };
 

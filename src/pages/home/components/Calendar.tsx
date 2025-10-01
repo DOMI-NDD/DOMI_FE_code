@@ -551,7 +551,7 @@ const ListModalEventBox = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 8px;
+  border-radius: calc(100vh * 8 / 1080);
   min-height: calc(100vh * 100 / 1080);
   min-width:  calc((100vh * 100 / 1080) * (604 / 100));
   cursor: pointer;
@@ -561,7 +561,7 @@ const ListModalEventInfoBox = styled.div`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: calc(100vh * 5 / 1080);
   margin: 0 calc(100vh * 36 / 1080);
 `
 
@@ -579,7 +579,7 @@ const ListModalEventContent = styled.span`
 const ButtonBox = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 24px;
+  gap: calc(100vh * 24 / 1080);
   width:  calc((100vh * 100 / 1080) * (604 / 100));
   position: absolute;
   top: 74.07vh;
@@ -595,7 +595,7 @@ const Button = styled.button<{backColor: string}>`
   color: #ffffff;
   font-size: clamp(18px, 0.78vw, 23px);
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: calc(100vh * 8 / 1080);
 `
 
 const ModalTitle = styled.h2`
@@ -651,7 +651,7 @@ const EditContentArea = styled.textarea`
 
 const DateInputContainer = styled.div`
   display: flex;
-  gap: 32px;
+  gap: calc(100vh * 32 / 1080);
 `
 
 const DateInputBox = styled.div`
@@ -669,7 +669,7 @@ const DateInput = styled.input`
   box-sizing: border-box;
   width: calc((100vh * 60 / 1080) * (180 / 60));
   height: calc(100vh * 60 / 1080);
-  border-radius: 8px;
+  border-radius: calc(100vh * 8 / 1080);
   border: 1px solid #939393;
   color: #939393;
   font-weight: 400;
@@ -683,7 +683,7 @@ const DateInput = styled.input`
 
 const NewEventTitleInput = styled.input`
   box-sizing: border-box;
-  border-radius: 8px;
+  border-radius: calc(100vh * 8 / 1080);
   border: 1px solid #939393;
   height: calc(100vh * 56 / 1080);
   width:  calc((100vh * 56 / 1080) * (500 / 56));
@@ -699,10 +699,10 @@ const NewEventTitleInput = styled.input`
 const NewEventContentInput = styled.textarea`
   box-sizing: border-box;
   font-size: clamp(15px, 1.04vw, 19px);
-  height: calc(100vh * 254 / 1080);
+  height: calc(100vh * 200 / 1080);
   width:  calc((100vh * 254 / 1080) * (604 / 254));
   border: 1px solid #939393;
-  border-radius: 8px;
+  border-radius: calc(100vh * 8 / 1080);
   resize: none;
   padding: calc(100vh * 16 / 1080);
 `
@@ -717,7 +717,7 @@ const Middle = styled.span`
 const TextBox = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: calc(100vh * 8 / 1080);
   align-items: center;
   margin: 1.85vh 0 0.74vh;
 `
@@ -732,4 +732,5 @@ const Content = styled.span`
   font-weight: 400;
   font-size: clamp(15px, 1.042vw, 19px);
 `
+
 export default Calendar
