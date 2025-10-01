@@ -3,7 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import type { EventType } from "@/pages/home/components/types";
 import EventModal from "@/pages/home/components/EventModal";
-import { fetchEvents, createEventsInRange, updateEvent, deleteEvent } from "@/pages/home/components/CalendarApi";
+import { fetchEvents, createEvent, updateEvent, deleteEvent } from "@/pages/home/components/CalendarApi";
 import styled from "@emotion/styled";
 import interactionPlugin from "@fullcalendar/interaction";
 import "./CalendarStyle.css";
@@ -11,6 +11,9 @@ import Arrow from "@/assets/arrow.png"
 import ModalArrow from "@/assets/modalArrow.png"
 
 const Calendar: React.FC = () => {
+  const now = new Date();
+  const [year, setYear] = useState<number>(now.getFullYear());
+  const [month, setMonth] = useState<number>(now.getMonth()+1);
   const [events, setEvents] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +42,11 @@ const Calendar: React.FC = () => {
   const [endMonth, setEndMonth] = useState<string>("");
   const [endDay, setEndDay] = useState<string>("");
 
+  //year, month 최신 상태 유지
+  useEffect(() => {
+    Rerendering(year, month);
+  }, [year, month]);
+
   const close = () => {
     setIsListModalOpen(false);
     setIsCreateModalOpen(false);
@@ -48,11 +56,21 @@ const Calendar: React.FC = () => {
     setFormContent("");
   }
 
+  const Rerendering = async (year: number, month: number) => {
+    try {
+        const data = await fetchEvents(year, month);
+        console.log("fetchEvents 결과:", data);
+        setEvents(data);
+      } catch (e) {
+        setError("일정을 불러오지 못했습니다.");
+    };
+  }
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const data = await fetchEvents();
+        const data = await fetchEvents(year, month);
         console.log("fetchEvents 결과:", data);
         if (mounted) {
           setEvents(data);
@@ -166,14 +184,13 @@ const Calendar: React.FC = () => {
       return
     }
 
-    const newEvents = await createEventsInRange({
+    await createEvent({
       startDate: startISO,
       endDate: endISO,
       title: formTitle,
       content: formContent,
     });
-
-    setEvents((prev) => [...prev, ...newEvents])
+    Rerendering(year, month);
 
     setStartYear("");
     setStartMonth("");
@@ -205,7 +222,7 @@ const Calendar: React.FC = () => {
     setFormContent(selectedEvent.content ?? "내용 없음");
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if(!selectedEvent){
       return
     }
@@ -223,20 +240,21 @@ const Calendar: React.FC = () => {
     };
 
     //DB에 저장하기 위한 요청
-    updateEvent(updated);
-    //상태 갱신을 위한 업데이트
-    setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
-    
+    await updateEvent(updated.id, {
+      title: updated.title,
+      content: updated.content,
+    });
+    Rerendering(year, month);
     setIsEditModalOpen(false);
   }
 
-  const handleDeleteFromEdit = () => {
+  const handleDeleteFromEdit = async () => {
     if(!selectedEvent){
       return;
     }
 
-    deleteEvent(selectedEvent.id);
-    setEvents((prev) => prev.filter((e) => e.id !== selectedEvent.id));
+    await deleteEvent(selectedEvent.id);
+    Rerendering(year, month);
     setIsEditModalOpen(false);
     setIsDetailModalOpen(false);
   }
@@ -261,6 +279,8 @@ const Calendar: React.FC = () => {
         }))}
         dateClick={handleDayClick}
         fixedWeekCount={false} 
+        contentHeight="auto"
+        aspectRatio={0.2}
         headerToolbar={{
             start: "",     // 왼쪽: 이전 버튼
             center: "title",   // 가운데: 제목
@@ -290,27 +310,46 @@ const Calendar: React.FC = () => {
         
         datesSet={(arg) => {
           const currentDate = arg.view.currentStart;
-          const year = currentDate.getFullYear();
-          const month = currentDate.getMonth() + 1;
+          let y = currentDate.getFullYear();
+          let m = currentDate.getMonth() + 1;
+          setYear(y);
+          setMonth(m);
+
 
           const titleEl = document.querySelector(".fc-toolbar-title");
           if (titleEl) {
             titleEl.innerHTML = `
               <div style="display: flex; flex-direction: column; gap: 20px;">
-                <span style="font-size: 36px; font-weight: 700;">${year}</span>
+                <span style="font-size: 36px; font-weight: 700;">${y}</span>
                 <div style="box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 20px; font-size: 40px; font-weight: 700; width:964px; padding: 0px 50px;">
                   <img src="${Arrow}" class="fc-prev-btn" style="cursor: pointer; width: 10px; height: 16px; transform: rotate(180deg);" />
-                  <span>${month}월</span>
+                  <span>${m}월</span>
                   <img src="${Arrow}" class="fc-next-btn" style="cursor: pointer; width: 10px; height: 16px;" />
                 </div>
               </div>
             `;
 
-            titleEl.querySelector(".fc-prev-btn")?.addEventListener("click", () => {
+            titleEl.querySelector(".fc-prev-btn")?.addEventListener("click", async () => {
+              if(month === 1){
+                setYear(year - 1);
+                setMonth(12);
+              }
+              else{
+                setMonth(month - 1);
+              }      
               arg.view.calendar.prev();
+
             });
             titleEl.querySelector(".fc-next-btn")?.addEventListener("click", () => {
+              if(month === 12){
+                setYear(year + 1);
+                setMonth(1);
+              }
+              else{
+                setMonth(month + 1);
+              }           
               arg.view.calendar.next();
+
             });
           }
         }}
@@ -496,10 +535,14 @@ const Backdrop = styled.div`
 `;
 
 const ListModalEventContainer = styled.div`
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: calc(100vh * 19 / 1080);
   margin-top: calc(100vh * 91 / 1080);
+  height: 50vh;
+  overflow-y: auto;
+  scrollbar-width: none;
 `
 
 const ListModalEventBox = styled.div`
@@ -509,8 +552,8 @@ const ListModalEventBox = styled.div`
   justify-content: space-between;
   align-items: center;
   border-radius: 8px;
-  height: calc(100vh * 100 / 1080);
-  width:  calc((100vh * 100 / 1080) * (604 / 100));
+  min-height: calc(100vh * 100 / 1080);
+  min-width:  calc((100vh * 100 / 1080) * (604 / 100));
   cursor: pointer;
 `
 
