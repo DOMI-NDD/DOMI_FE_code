@@ -1,13 +1,16 @@
 // src/axsios/calendarApi.ts
 import type { EventType } from "@/pages/home/components/types";
 import axios from "axios";
+import { useState } from "react";
+
+const [accessToken, _setAccessToken] = useState(localStorage.getItem("accessToken"));
 
 // 공통 axsios 인스턴스
 const axsios = axios.create({
   baseURL: "http://13.209.77.82:8080",
   headers: {
     "Content-Type": "application/json",
-    Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiYWNjZXNzX3Rva2VuIiwic3ViIjoibCIsImlhdCI6MTc1OTMyMTM1OCwiZXhwIjoxNzU5OTI2MTU4fQ.Pwn0s2MPQi59BpPTaOu9CfYcmpfjTm6fpOkytKp1zZQ"
+    Authorization: `Bearer ${accessToken}`
   },
 });
 

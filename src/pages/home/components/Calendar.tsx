@@ -216,6 +216,10 @@ const Calendar: React.FC = () => {
     if(!selectedEvent){
       return
     }
+    if(selectedEvent.id === null){
+      alert("학교 캘린더 일정은 삭제/수정할 수 없습니다.");
+      return;
+    }
     setIsEditModalOpen(true)
 
     setFormTitle(selectedEvent.title ?? "");
@@ -224,7 +228,7 @@ const Calendar: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if(!selectedEvent){
-      return
+      return;
     }
 
     const TitleTrim = (formTitle || "").trim();
