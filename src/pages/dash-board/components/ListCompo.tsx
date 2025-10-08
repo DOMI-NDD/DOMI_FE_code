@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import styled from '@emotion/styled'
+import styled from '@emotion/styled';
 import { useState } from 'react';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
@@ -12,48 +12,62 @@ import URL from '@/layouts/Url';
 interface ListProps {
   add: ItemType[];
   setAdd: React.Dispatch<React.SetStateAction<ItemType[]>>;
-  show: boolean
-  setShow: React.Dispatch<React.SetStateAction<boolean>>
-  selectedItem: ItemType | null
-  setSelectedItem:React.Dispatch<React.SetStateAction<ItemType | null>>;
+  show: boolean;
+  setShow: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedItem: ItemType | null;
+  setSelectedItem: React.Dispatch<React.SetStateAction<ItemType | null>>;
   onSuccess: () => void;
 }
 
-export default function AddList({ add, setAdd, show, setShow, selectedItem, setSelectedItem, onSuccess }: ListProps) {
+export default function AddList({
+  add,
+  setAdd,
+  show,
+  setShow,
+  selectedItem,
+  setSelectedItem,
+  onSuccess,
+}: ListProps) {
   const [editMode, setEditMode] = useState(false);
+  const [rmShow, setRmShow] = useState(false);
 
   const handleClose = () => {
-    setSelectedItem(null);
     setShow(false);
   };
 
+  const rmHandleClose = () => setRmShow(false);
+  const rmHandleShow = () => setRmShow(true);
+
   const handleSubmit = async (id: any) => {
-    console.log(id)
-    const accessToken = localStorage.getItem("accessToken")
+    const accessToken = localStorage.getItem('accessToken');
     try {
-      const response = await axios.delete(`${URL}/notice-boards/${id}`, {
+      await axios.delete(`${URL}/notice-boards/${id}`, {
         headers: {
-            Authorization: `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      onSuccess()
-      console.log(response)
+      onSuccess();
     } catch (error) {
       console.error('연결 실패:', error);
-      alert("연결에 실패했습니다.");
+      alert('연결에 실패했습니다.');
     }
   };
 
   return (
     <>
-      <DetailModal show={show} onHide={handleClose} dialogClassName="modal-80size" >
+      {/* 상세보기 모달 */}
+      <DetailModal show={show} onHide={handleClose} dialogClassName="modal-80size">
         <Modal.Header closeButton>
           <Modal.Title>{selectedItem?.title}</Modal.Title>
         </Modal.Header>
-        <Modal.Body css={css`
-          margin:15px;
-          background-color: #dadfe8;
-        `}>{selectedItem?.detail}</Modal.Body>
+        <Modal.Body
+          css={css`
+            margin: 15px;
+            background-color: #dadfe8;
+          `}
+        >
+          {selectedItem?.detail}
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             닫기
@@ -68,18 +82,55 @@ export default function AddList({ add, setAdd, show, setShow, selectedItem, setS
             수정
           </Button>
           <Button
-            css={css`background-color:red;`}
+            css={css`
+              &:hover,
+              &:focus,
+              &:active {
+                background-color: #ff0000 !important;
+                border: 0 !important;
+              }
+              background-color: #ff0000;
+              border: 0;
+            `}
             variant="primary"
-            onClick={()=>{
-              const updated = add.filter((e) => e.id !== selectedItem?.id);
-              if(!selectedItem) return;
-              handleSubmit(selectedItem.id)
-              handleClose()
-          }}>
+            onClick={() => {
+              handleClose();
+              rmHandleShow();
+            }}
+          >
             삭제
           </Button>
         </Modal.Footer>
       </DetailModal>
+      <Modal show={rmShow} onHide={rmHandleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>삭제</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>정말 삭제 하시겠습니까?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={rmHandleClose}>
+            취소
+          </Button>
+          <Button css={css`
+            &:hover,
+            &:focus,
+            &:active {
+              background-color: #FF0000 !important;
+              border: 0 !important;
+            }
+            background-color: #FF0000;
+            border: 0;
+          `} variant="primary" onClick={()=>{
+            if(!selectedItem) return;
+            console.log('?')
+            handleSubmit(selectedItem.id)
+            setSelectedItem(null);
+            rmHandleClose()
+          }}>
+            삭제
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {editMode && selectedItem && (
         <EditCompo
@@ -90,73 +141,9 @@ export default function AddList({ add, setAdd, show, setShow, selectedItem, setS
           onSuccess={onSuccess}
         />
       )}
-      
     </>
   );
 }
-
-const Btn = styled(Button)`
-  background-color: white;
-  border:0;
-  color:black;
-  display: flex;
-  align-items: center;
-  &:hover, &:focus, &:active {
-    background-color: white !important;
-    color: black !important;
-    box-shadow: none !important;
-  }
-`
-
-const Table = styled.table`
-  width:80%;
-  margin-top:30px;
-  padding:0 20px;
-  border:0;
-  border-collapse: collapse;
-`
-
-const TableHead = styled.thead`
-  /* background-color: #f0f0f0;  */
-  text-align: left;
-  color: #666;
-  padding:20px;
-  border:0;
-  font-size:28px;
-`;
-
-const TableBody = styled.tbody`
-  color: #333;
-`;
-
-const TableRow = styled.tr`
-  border-bottom: 1px solid rgba(147, 147, 147, 1);
-  padding:20px;
-`;
-
-const TableHeadCell = styled.td`
-  padding: 0 12px;
-  height:64px;
-  font-size: 28px;
-  color:rgba(0, 0, 0, 1);
-`
-
-const TableCellDiv = styled.div`
-  display:flex;
-  justify-content:center;
-`
-
-const TableCell = styled.td`
-  padding: 0 18px;
-  height:64px;
-  font-size: 20px;
-`;
-
-const Span = styled.span`
-  font-size: 28px;
-`
-
-
 
 const DetailModal = styled(Modal)`
   .modal-dialog.modal-80size {
@@ -166,4 +153,4 @@ const DetailModal = styled(Modal)`
   .modal-content {
     min-height: 400px;
   }
-`
+`;
