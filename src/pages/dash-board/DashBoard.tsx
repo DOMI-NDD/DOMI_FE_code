@@ -55,7 +55,7 @@ export default function DashBoard() {
   };
 
   const [page, setPage] = useState(0);
-  const itemsPerPage = 3;
+  const itemsPerPage = 20;
 
   const totalPages = Math.ceil(add.length/itemsPerPage)
   const startIndex = page * itemsPerPage;
