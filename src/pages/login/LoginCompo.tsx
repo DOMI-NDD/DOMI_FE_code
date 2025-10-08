@@ -83,7 +83,13 @@ export function Button({ id, pass, setToken }: BtnProps) {
       
     } catch (error) {
       console.error('로그인 실패:', error);
-      alert("로그인에 실패했습니다.");
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          alert("잘못된 비밀번호입니다.");
+        } else if (error.response?.status === 404) {
+          alert("잘못된 아이디입니다.");
+        }
+      }
     }
   };
   return(
