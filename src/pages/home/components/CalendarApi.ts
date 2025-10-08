@@ -1,9 +1,8 @@
 // src/axsios/calendarApi.ts
 import type { EventType } from "@/pages/home/components/types";
 import axios from "axios";
-import { useState } from "react";
 
-const [accessToken, _setAccessToken] = useState(localStorage.getItem("accessToken"));
+const accessToken = localStorage.getItem("accessToken");
 
 // 공통 axsios 인스턴스
 const axsios = axios.create({
