@@ -10,13 +10,14 @@ import type { ItemType } from '@/types';
 import ReactPaginate from "react-paginate";
 import SearchBar from '@/pages/dash-board/components/SearchCompo';
 import URL from '@/layouts/Url';
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 
 export default function DashBoard() {
   const [add, setAdd] = useState<ItemType[]>([]); 
   const [search, setSearch] = useState<string>("")
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate()
   
   const fetchData = async () => {
     try {
@@ -24,6 +25,7 @@ export default function DashBoard() {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
         console.error("토큰이 없습니다. 로그인 필요");
+        navigate('/login')
         return;
       }
       const keyword = searchParams.get("keyword") || "";
@@ -34,6 +36,14 @@ export default function DashBoard() {
       setAdd(response.data);
     } catch (error) {
       console.error("오류:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          alert("로그인이 필요합니다.");
+          navigate('/login');
+        } else if (error.response?.status === 400) {
+          alert("잘못된 요청입니다.");
+        }
+      }
     }
   };
 

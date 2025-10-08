@@ -7,6 +7,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import type { ItemType } from '@/types';
 import URL from '@/layouts/Url';
+import { useNavigate } from 'react-router-dom';
 
 interface EditProps {
   selectedItem: ItemType;
@@ -19,6 +20,8 @@ interface EditProps {
 export default function EditCompo({ selectedItem, onClose, onSuccess }: EditProps) {
   const [title, setTitle] = useState(selectedItem.title);
   const [content, setContent] = useState(selectedItem.detail);
+
+  const navigate = useNavigate()
 
   const handleSubmit = async (id: Number) => {
     try {
@@ -40,7 +43,14 @@ export default function EditCompo({ selectedItem, onClose, onSuccess }: EditProp
       console.log(response)
     } catch (error) {
       console.error('연결 실패:', error);
-      alert("연결에 실패했습니다.");
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          alert("로그인이 필요합니다.");
+          navigate('/login');
+        } else if (error.response?.status === 403) {
+          alert("자신의 글이 아닙니다.");
+        }
+      }
     }
   };
 
