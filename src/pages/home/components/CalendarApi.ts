@@ -1,17 +1,54 @@
-// src/axsios/calendarApi.ts
 import type { EventType } from "@/pages/home/components/types";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const accessToken = localStorage.getItem("accessToken");
+const navigate = useNavigate()
 
 // 공통 axsios 인스턴스
 const axsios = axios.create({
-  baseURL: "http://13.209.77.82:8080",
+  baseURL: "/api",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${accessToken}`
   },
 });
+
+//요청 인터셉터
+axsios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    console.error("요청 인터셉터 에러:", error);
+    return Promise.reject(error);
+  }
+);
+
+//응답 인터셉터
+axsios.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response) {
+      const status = error.response.status;
+
+      switch (status) {
+        case 400:
+          alert("요청 형식이 잘못되었습니다.");
+          break;
+        case 401:
+          alert("로그인이 필요합니다.");
+          navigate('/login');
+          break;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // 백엔드 → 프론트 매핑
 const mapFromBackend = (data: any): EventType => ({ 
