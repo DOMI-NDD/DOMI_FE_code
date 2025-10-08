@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import styled from '@emotion/styled';
 import { useState } from 'react';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
@@ -17,7 +16,7 @@ interface EditProps {
   onSuccess: () => void
 }
 
-export default function EditCompo({ selectedItem, add, setAdd, onClose, onSuccess }: EditProps) {
+export default function EditCompo({ selectedItem, onClose, onSuccess }: EditProps) {
   const [title, setTitle] = useState(selectedItem.title);
   const [content, setContent] = useState(selectedItem.detail);
 

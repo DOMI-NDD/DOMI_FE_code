@@ -5,16 +5,15 @@ import styled from '@emotion/styled'
 import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
-
-  const navigate = useNavigate()
 
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const username = localStorage.getItem('username')
 
   return (
         <Head css={css`
@@ -71,7 +70,7 @@ export default function Header() {
           <div style={{ display: 'flex' }}>
             <Img src="https://search.pstatic.net/sunny/?src=https%3A%2F%2Fi.namu.wiki%2Fi%2FKZw2eavDjacb3MoLxJp9xGzkmenTBRFSgluV006RlWyES3-B9rV8Ln8Y_KEJalWaEZ2GqPJxZ2YqxrD7C8BTYA.webp&type=sc960_832" alt="" />
             <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
-              <h2 style={{ margin: '18px 0px 10px 0px', fontWeight: 600 }}>OOO선생님</h2>
+              <h3 style={{ margin: '18px 0px 10px 0px', fontWeight: 600 }}>{username} 선생님</h3>
               <p css={css`
                   &:hover,
             &:focus,

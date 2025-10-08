@@ -1,10 +1,8 @@
 import styled from '@emotion/styled'
-import axios from "axios";
-import { useEffect, useState } from "react";
-import type { ItemType } from "@/types";
+import { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons'
-import type { SetURLSearchParams } from 'react-router-dom';
+import { faRotateLeft, faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons'
+import { type SetURLSearchParams } from 'react-router-dom';
 
 interface SearchBar {
   search: string;
@@ -16,6 +14,8 @@ interface SearchBar {
 
 export default function SearchBar({ search, setSearch, onSuccess, searchParams, setSearchParams }: SearchBar) {
   
+
+
   useEffect(() => {
     const keyword = searchParams.get('keyword');
     if (keyword) setSearch(keyword);
@@ -47,6 +47,17 @@ export default function SearchBar({ search, setSearch, onSuccess, searchParams, 
         }}>
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </P>
+        <P onClick={()=>{
+          searchParams.delete('keyword')
+          setSearchParams(searchParams)
+          setSearch('')
+        }}>
+          <Reset
+            icon={faRotateLeft}
+              // rotated={rotated}  
+              // onClick={() => setRotated(!rotated)}
+          />
+        </P>
       </Div>
     </SearchBox>
   )
@@ -69,7 +80,7 @@ const SearchBox = styled.div`
 `
 
 const Input = styled.input`
-  width:100%;
+  width:90%;
   height:100%;
   border: 0;
   font-size: 23px;
@@ -82,15 +93,22 @@ const Div = styled.div`
   width: 30px;
   height:30px;
   cursor: pointer;
-  /* display:flex;
+  display:flex;
   justify-content:center;
-  align-items:center; */
+  align-items:center;
 `
 
 const P = styled.p`
   color: rgba(69, 76, 255, 1);
   font-size:22px;
   margin: 0;
+  /* padding-right: 15px; */
+  translate:all 1s ease-in;
 `
 
-
+const Reset = styled(FontAwesomeIcon)`
+  color: rgba(69, 76, 255, 1);
+  font-size: 22px;
+  margin: 0;
+  cursor: pointer;  
+`;

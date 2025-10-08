@@ -1,12 +1,10 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import styled from '@emotion/styled';
 import { useState } from 'react';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import AddList from '@/pages/dash-board/components/ListCompo';
 import type { ItemType } from '@/types';
 import URL from '@/layouts/Url';
 
@@ -18,7 +16,7 @@ interface WriteProps {
   onSuccess: () => void;
 }
 
-export default function Write({ add, setAdd, show, setShow, onSuccess } : WriteProps) {
+export default function Write({ add, show, setShow, onSuccess } : WriteProps) {
 
   const handleClose = () => setShow(false);
 
@@ -45,14 +43,9 @@ export default function Write({ add, setAdd, show, setShow, onSuccess } : WriteP
     } catch (error) {
       console.error('연결 실패:', error);
       alert("연결에 실패했습니다.");
+      
     }
   };
-
-  const activeEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if(e.key === "Enter") {
-      handleSubmit();
-    }
-  }
 
   return(
     <>
