@@ -6,7 +6,7 @@ const accessToken = localStorage.getItem("accessToken");
 
 // 공통 axsios 인스턴스
 const axsios = axios.create({
-  baseURL: "/api",
+  baseURL: "http://13.209.77.82:8080",
   headers: {
     "Content-Type": "application/json",
     Authorization: `Bearer ${accessToken}`
