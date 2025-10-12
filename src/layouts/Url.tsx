@@ -1,2 +1,2 @@
-const URL = 'http://13.209.77.82:8080'
+const URL = '/api'
 export default URL
