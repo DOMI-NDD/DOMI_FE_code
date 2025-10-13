@@ -9,8 +9,11 @@ import interactionPlugin from "@fullcalendar/interaction";
 import "./CalendarStyle.css";
 import Arrow from "@/assets/arrow.png"
 import ModalArrow from "@/assets/modalArrow.png"
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Calendar: React.FC = () => {
+  const navigate = useNavigate();
   const now = new Date();
   const [year, setYear] = useState<number>(now.getFullYear());
   const [month, setMonth] = useState<number>(now.getMonth()+1);
@@ -61,9 +64,12 @@ const Calendar: React.FC = () => {
         const data = await fetchEvents(year, month);
         console.log("fetchEvents 결과:", data);
         setEvents(data);
-      } catch (e) {
-        setError("일정을 불러오지 못했습니다.");
-    };
+      } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+      }
+    }
   }
 
   useEffect(() => {
