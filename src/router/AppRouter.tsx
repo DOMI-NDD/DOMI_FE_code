@@ -10,9 +10,7 @@ export default function AppRouter() {
   const [token, setToken] = useState(localStorage.getItem("accessToken"));
   
   // BrowserRouter 내부에서 useReissue 호출
-  useEffect(() => {
-    useReissue();
-  }, [])
+  useReissue();
 
   useEffect(() => {
     const handleStorage = () => setToken(localStorage.getItem("accessToken"));

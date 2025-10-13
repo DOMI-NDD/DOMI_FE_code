@@ -1,8 +1,5 @@
 import type { EventType } from "@/pages/home/components/types";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-
-const navigate = useNavigate()
 
 // 공통 axsios 인스턴스
 const axsios = axios.create({
@@ -39,10 +36,6 @@ axsios.interceptors.response.use(
       switch (status) {
         case 400:
           alert("요청 형식이 잘못되었습니다.");
-          break;
-        case 401:
-          alert("로그인이 필요합니다.");
-          navigate('/login');
           break;
       }
     }
